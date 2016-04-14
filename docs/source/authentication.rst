@@ -177,7 +177,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= ==========
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
     301   HS_PUBKEY 0000A552100
      ...  ...       ...
     ===== ========= ==========
@@ -187,7 +187,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= ==========
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
      ...  ...       ...
     ===== ========= ==========
 
@@ -211,7 +211,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= ==========
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
     301   HS_PUBKEY 0000A552100
      ...  ...       ...
     ===== ========= ==========
@@ -221,7 +221,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= ==========
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
      ...  ...       ...
     ===== ========= ==========
 
@@ -261,7 +261,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= =======================
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
     301   HS_PUBKEY 0000A552100
      ...  ...       ...
     ===== ========= =======================
@@ -271,7 +271,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     ===== ========= =======================
     Index Key       Value
      ...  ...       ...
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
      ...  ...       ...
     ===== ========= =======================
 
@@ -314,7 +314,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     Index Key       Value
     ...   ...       ...
     100   HS_ADMIN  (refers to 201:foo/admin)
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpassword*
     301   HS_PUBKEY 0000A552100
      ...  ...       ...
     ===== ========= =======================
@@ -325,7 +325,7 @@ These are three ways to grant admin permissions to users **300:foo/bar** and **3
     Index Key       Value
     ...   ...       ...
     100   HS_ADMIN  (refers to 201:foo/admin)
-    300   HS_SECKEY *mypassword*
+    300   HS_SECKEY *userpasswords*
      ...  ...       ...
     ===== ========= =======================
 
