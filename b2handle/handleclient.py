@@ -356,10 +356,10 @@ class EUDATHandleClient(object):
             return '(No handle record found)' # Instead of HandleNotFoundException!
         list_of_entries = handlerecord_json['values']
 
-        string = self.__construct_pretty_print_string(handle, handlerecord_json)
+        string = self.__construct_pretty_print_string(handle, list_of_entries)
         return string
 
-    def __construct_pretty_print_string(self, handle, handlerecord_json):
+    def __construct_pretty_print_string(self, handle, list_of_entries):
         n = 20
         desiredlength = 10
         pre = ' * '
@@ -374,14 +374,18 @@ class EUDATHandleClient(object):
 
             current_value = '...'
             try:
-                current_value = str(self.__extract_value_from_entry(entry))
-                length = len(current_value)
+                try:
+                    current_value = entry['data']['value']
+                except TypeError:
+                    current_value = entry['data']
+                current_value_str = str(current_value)
+                length = len(current_value_str)
                 if length < desiredlength:
-                    current_value = current_value + ' '*(desiredlength-length)
+                    current_value_str = current_value_str + ' '*(desiredlength-length)
             except KeyError:
                 pass
 
-            string_to_return += ('\n'+pre+current_type+': '+current_value+pre)
+            string_to_return += ('\n'+pre+current_type+': '+current_value_str+pre)
         string_to_return += ('\n'+' '+'*'*n)
         return string_to_return
 
