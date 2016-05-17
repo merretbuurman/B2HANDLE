@@ -334,6 +334,57 @@ class EUDATHandleClient(object):
                 record_as_dict[key] = str(entry['data']['value'])
         return record_as_dict
 
+    def pretty_print_handle_record(self, handle, handlerecord_json=None):
+        '''
+        Retrieve a handle record from the Handle server as a dict. If there
+        is several entries of the same type, only the first one is
+        returned. Values of complex types (such as HS_ADMIN) are
+        transformed to strings.
+
+        :param handle: The handle whose record to retrieve.
+        :param handlerecord_json: Optional. If the handlerecord has already
+            been retrieved from the server, it can be reused.
+        :return: A dict where the keys are keys from the Handle record (except
+            for hidden entries) and every value is a string. The result will be
+            None if the Handle does not exist.
+        :raises: :exc:`~b2handle.handleexceptions.HandleSyntaxError`
+        '''
+        LOGGER.debug('retrieve_handle_record...')
+
+        handlerecord_json = self.__get_handle_record_if_necessary(handle, handlerecord_json)
+        if handlerecord_json is None:
+            return '(No handle record found)' # Instead of HandleNotFoundException!
+        list_of_entries = handlerecord_json['values']
+
+        string = self.__construct_pretty_print_string(handle, handlerecord_json)
+        return string
+
+    def __construct_pretty_print_string(self, handle, handlerecord_json):
+        n = 20
+        desiredlength = 10
+        pre = ' * '
+        string_to_return = (' '+'*'*n)
+        string_to_return += ('\n'+pre+ 'Handle: '+handle + pre)
+        for entry in list_of_entries:
+
+            current_type = entry['type']
+            length = len(current_type)
+            if length < desiredlength:
+                current_type = current_type + ' '*(desiredlength-length)
+
+            current_value = '...'
+            try:
+                current_value = str(self.__extract_value_from_entry(entry))
+                length = len(current_value)
+                if length < desiredlength:
+                    current_value = current_value + ' '*(desiredlength-length)
+            except KeyError:
+                pass
+
+            string_to_return += ('\n'+pre+current_type+': '+current_value+pre)
+        string_to_return += ('\n'+' '+'*'*n)
+        return string_to_return
+
     def get_value_from_handle(self, handle, key, handlerecord_json=None):
         '''
         Retrieve a single value from a single Handle. If several entries with
