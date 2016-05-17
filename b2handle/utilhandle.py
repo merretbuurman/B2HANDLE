@@ -154,3 +154,6 @@ def make_request_log_message(**args):
     message += space+'RESPONSE:'+space+str(args['resp'].content)
     return message
 
+
+DEFAULTS =  {}
+DEFAULTS['special_types']=['HS_ADMIN', 'HS_SECKEY', 'HS_PUBKEY', 'HS_VLIST', 'HS_SITE']

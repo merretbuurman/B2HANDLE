@@ -14,6 +14,7 @@ import uuid
 import logging
 import datetime
 import utilhandle
+from utilhandle import DEFAULTS
 import util
 import requests # This import is needed for mocking in unit tests.
 from handleexceptions import HandleNotFoundException
@@ -334,7 +335,7 @@ class EUDATHandleClient(object):
                 record_as_dict[key] = str(entry['data']['value'])
         return record_as_dict
 
-    def pretty_print_handle_record(self, handle, handlerecord_json=None):
+    def pretty_print_handle_record(self, handle, handlerecord_json=None, print_special_types=False, max_length_types=20, max_length_values=50):
         '''
         Retrieve a handle record from the Handle server as a dict. If there
         is several entries of the same type, only the first one is
@@ -356,38 +357,108 @@ class EUDATHandleClient(object):
             return '(No handle record found)' # Instead of HandleNotFoundException!
         list_of_entries = handlerecord_json['values']
 
-        string = self.__construct_pretty_print_string(handle, list_of_entries)
+        string = self.__construct_pretty_print_string(handle, list_of_entries, print_special_types, max_length_types, max_length_values)
         return string
 
-    def __construct_pretty_print_string(self, handle, list_of_entries):
-        n = 20
-        desiredlength = 10
-        pre = ' * '
-        string_to_return = (' '+'*'*n)
-        string_to_return += ('\n'+pre+ 'Handle: '+handle + pre)
+    def __construct_pretty_print_string(self, handle, list_of_entries, print_special_types, max_length_types, max_length_values):
+        symbol = '*'
+
+        # Get longest types/values:
+        highest_length_types = self.__get_max_length_types(list_of_entries, print_special_types)
+        highest_length_values = self.__get_max_length_values(list_of_entries, print_special_types)
+
+        # If they are too long, set a max:
+        if highest_length_types > max_length_types:
+            highest_length_types = max_length_types
+        if highest_length_values > max_length_values:
+            highest_length_values = max_length_values
+
+        # Define total length of lines:
+        len_separator_type_value = 2
+        len_spaces_before_and_after_symbol = 2
+        totallength = max_length_values + max_length_types + len_separator_type_value + 2*len(symbol) + len_spaces_before_and_after_symbol
+
+        # Construct string:
+        firstlines = self.__make_pretty_firstlines(handle, symbol, totallength)
+        middlelines = self.__make_pretty_lines(list_of_entries, symbol, max_length_types, max_length_values, print_special_types)
+        lastline = self.__make_pretty_lastline(totallength)
+
+        return  firstlines + lastline + middlelines + lastline
+
+    def __get_max_length_types(self, list_of_entries, print_special_types):
+        max_length = 0
         for entry in list_of_entries:
-
-            current_type = entry['type']
-            length = len(current_type)
-            if length < desiredlength:
-                current_type = current_type + ' '*(desiredlength-length)
-
-            current_value = '...'
-            try:
-                try:
-                    current_value = entry['data']['value']
-                except TypeError:
-                    current_value = entry['data']
-                current_value_str = str(current_value)
-                length = len(current_value_str)
-                if length < desiredlength:
-                    current_value_str = current_value_str + ' '*(desiredlength-length)
-            except KeyError:
+            if print_special_types==False and entry['type'] in DEFAULTS['special_types']:
                 pass
+            else:
+                candidate_length = len(entry['type'])
+                if candidate_length > max_length:
+                    max_length = candidate_length
+        return max_length
 
-            string_to_return += ('\n'+pre+current_type+': '+current_value_str+pre)
-        string_to_return += ('\n'+' '+'*'*n)
+    def __get_max_length_values(self, list_of_entries, print_special_types):
+        max_length = 0
+        for entry in list_of_entries:
+            if print_special_types==False and entry['type'] in DEFAULTS['special_types']:
+                pass
+            else:
+                value = self.__extract_value_from_entry(entry)
+                candidate_length = len(value)
+                if candidate_length > max_length:
+                    max_length = candidate_length
+        return max_length
+
+    def __make_pretty_lines(self, list_of_entries, symbol, len_type, len_val, print_special_types):
+        string_to_return = ''
+        for entry in list_of_entries:
+            pretty_line = self.__make_pretty_line(entry, symbol,  len_type, len_val, print_special_types)
+            if pretty_line is not None:
+                string_to_return += pretty_line
         return string_to_return
+
+    def __make_pretty_line(self, entry, symbol, len_type, len_val, print_special_types):
+        line_to_return = None
+        current_type = entry['type']
+        if print_special_types==False and current_type in DEFAULTS['special_types']:
+            pass
+        else:
+            current_type = self.__pad_with_spaces(current_type, len_type)
+            current_value = self.__extract_value_from_entry(entry, as_string=True)
+            current_value = self.__pad_with_spaces(current_value, len_val)
+            line_to_return = ('\n'+symbol+' '+current_type+': '+current_value+' '+symbol)
+        return line_to_return
+
+    def __pad_with_spaces(self, string, desiredlength):
+        length = len(string)
+        
+        if length == desiredlength:
+            pass
+        elif length < desiredlength:
+            string = string + ' '*(desiredlength-length)
+        else:
+            string = string[0:desiredlength-4] + ' ...'
+
+        return string
+
+    def __make_pretty_firstlines(self, handle, symbol, n):
+        string_to_return = ('*'*n)
+        handle_padded = self.__pad_with_spaces(handle, n-4)
+        #string_to_return += ('\n'+symbol+ 'Handle: '+handle + symbol)
+        string_to_return += ('\n'+symbol+' '+handle_padded+' '+symbol)
+        return string_to_return
+
+    def __make_pretty_lastline(self, n):
+        return ('\n'+'*'*n)
+
+    def __extract_value_from_entry(self, entry, as_string=False):
+        try:
+            current_value = entry['data']['value']
+        except TypeError:
+            current_value = entry['data']
+        if as_string == True:
+            return str(current_value)
+        else:
+            return current_value
 
     def get_value_from_handle(self, handle, key, handlerecord_json=None):
         '''
