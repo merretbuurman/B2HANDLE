@@ -352,6 +352,21 @@ class HandleSystemConnector(object):
                 response=resp,
                 username=self.__username
             )
+        elif b2handle.hsresponses.wrong_user(resp):
+            raise HandleAuthenticationError(
+                operation=op,
+                handle=handle,
+                response=resp,
+                username=self.__username,
+                msg='This user does not have the necessary permissions'
+            )
+        elif b2handle.hsresponses.prefix_not_here(resp):
+            raise GenericHandleError(
+                handle=handle,
+                operation=op,
+                msg='Prefix and handle server do not match',
+                response=resp
+            )
         self.__first_request = False
         return resp, payload
 

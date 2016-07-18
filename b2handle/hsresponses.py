@@ -57,6 +57,11 @@ def not_authenticated(response):
         pass 
     return False
 
+def wrong_user(response):
+    if response.status_code == 403 and json.loads(response.content)["responseCode"] == 400:
+        return True
+    return False
+
 def values_not_found(response):
     if response.status_code == 400 and json.loads(response.content)["responseCode"] == 200:
         return True
@@ -64,5 +69,10 @@ def values_not_found(response):
 
 def handle_already_exists(response):
     if response.status_code == 409 & json.loads(response.content)["responseCode"] == 101:
+        return True
+    return False
+
+def prefix_not_here(response):
+    if response.status_code == 400 and json.loads(response.content)["responseCode"] == 301:
         return True
     return False
